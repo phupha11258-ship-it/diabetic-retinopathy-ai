@@ -1,0 +1,23 @@
+# Dataset and large local files
+data/
+outputs/
+__pycache__/
+*.pyc
+
+# Runtime uploads
+web/static/uploads/
+web/static/processed/
+
+# Python environment
+.venv/
+venv/
+env/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Kaggle credentials
+.kaggle/
+kaggle.json
+access_token

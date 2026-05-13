@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DR-Screen AI | Diabetic Retinopathy Screening</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader-card">
+            <div class="loader"></div>
+            <h3>Analyzing fundus image...</h3>
+            <p>Preprocessing image and running EfficientNet-B3 inference</p>
+        </div>
+    </div>
+
+    <main class="page-shell">
+
+        <section class="hero-card">
+            <div class="hero-left">
+                <div class="badge">AI MEDICAL SCREENING PROTOTYPE</div>
+                <h1>Diabetic Retinopathy Grading System</h1>
+                <p class="hero-subtitle">
+                    A deep learning prototype for screening and grading diabetic retinopathy
+                    from fundus photographs into five severity levels.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="#upload" class="primary-link">Start Screening</a>
+                    <a href="#method" class="secondary-link">View Workflow</a>
+                </div>
+            </div>
+
+            <div class="hero-panel">
+                <div class="model-chip">
+                    <span>Model</span>
+                    <strong>EfficientNet-B3</strong>
+                </div>
+
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <span>Accuracy</span>
+                        <strong>82.36%</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>QWK</span>
+                        <strong>0.8890</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Classes</span>
+                        <strong>5</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Input</span>
+                        <strong>224×224</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="notice-card">
+            <div class="notice-icon">!</div>
+            <div>
+                <strong>Research prototype only</strong>
+                <p>
+                    This system is designed as a proof-of-concept screening tool and is not intended
+                    to replace diagnosis by ophthalmologists or medical professionals.
+                </p>
+            </div>
+        </section>
+
+        <section id="method" class="workflow-card">
+            <div class="section-heading">
+                <span>System Workflow</span>
+                <h2>From retinal image to AI-assisted screening result</h2>
+            </div>
+
+            <div class="workflow-grid">
+                <div class="workflow-step">
+                    <div class="step-number">01</div>
+                    <h3>Upload</h3>
+                    <p>Receive a fundus photograph in JPG, JPEG, or PNG format.</p>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">02</div>
+                    <h3>Preprocess</h3>
+                    <p>Apply Local Average Subtraction to reduce illumination variation.</p>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">03</div>
+                    <h3>Inference</h3>
+                    <p>Classify the image using the trained EfficientNet-B3 model.</p>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">04</div>
+                    <h3>Report</h3>
+                    <p>Display predicted class, confidence score, and class probabilities.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="upload" class="main-grid">
+            <section class="upload-card">
+                <div class="section-heading compact">
+                    <span>Screening Input</span>
+                    <h2>Upload Fundus Image</h2>
+                </div>
+
+                {% if error %}
+                <div class="error-box">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+                    <label class="drop-zone" for="imageInput" id="dropZone">
+                        <input type="file" id="imageInput" name="image" accept=".jpg,.jpeg,.png" required>
+                        <div class="drop-icon">+</div>
+                        <h3>Choose or drag fundus image here</h3>
+                        <p id="fileName">Supported formats: JPG, JPEG, PNG</p>
+                    </label>
+
+                    <button type="submit" class="analyze-btn">
+                        <span>Analyze Image</span>
+                    </button>
+                </form>
+            </section>
+
+            <section class="info-card">
+                <div class="section-heading compact">
+                    <span>Model Output</span>
+                    <h2>Five-level DR Grading</h2>
+                </div>
+
+                <div class="class-list">
+                    <div><span class="dot no-dr"></span>No DR</div>
+                    <div><span class="dot mild"></span>Mild</div>
+                    <div><span class="dot moderate"></span>Moderate</div>
+                    <div><span class="dot severe"></span>Severe</div>
+                    <div><span class="dot pdr"></span>Proliferative DR</div>
+                </div>
+
+                <p class="small-text">
+                    The model output should be interpreted as preliminary screening support.
+                    Cases predicted as severe levels should be reviewed by medical professionals.
+                </p>
+            </section>
+        </section>
+
+        {% if prediction %}
+        <section class="result-layout">
+            <section class="result-card">
+                <div class="result-header">
+                    <div>
+                        <span class="result-label">Predicted Class</span>
+                        <h2>{{ prediction.predicted_class }}</h2>
+                        <p>{{ prediction.description }}</p>
+                    </div>
+
+                    <div class="confidence-ring">
+                        <span>{{ prediction.confidence }}%</span>
+                        <small>Confidence</small>
+                    </div>
+                </div>
+
+                <div class="result-meta">
+                    <div>
+                        <span>Inference Time</span>
+                        <strong>{{ prediction.inference_time_ms }} ms</strong>
+                    </div>
+                    <div>
+                        <span>Device</span>
+                        <strong>{{ device }}</strong>
+                    </div>
+                    <div>
+                        <span>Model</span>
+                        <strong>EfficientNet-B3</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="probability-card">
+                <div class="section-heading compact">
+                    <span>Confidence Distribution</span>
+                    <h2>Class Probabilities</h2>
+                </div>
+
+                <div class="probability-list">
+                    {% for item in prediction.results %}
+                    <div class="prob-row">
+                        <div class="prob-top">
+                            <span>{{ item.class_name }}</span>
+                            <strong>{{ item.percent }}%</strong>
+                        </div>
+                        <div class="prob-track">
+                            <div class="prob-fill" style="width: {{ item.percent }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </section>
+
+        <section class="image-compare-grid">
+            <section class="image-card">
+                <div class="image-card-header">
+                    <span>Original Input</span>
+                    <strong>Uploaded Fundus Image</strong>
+                </div>
+                <img src="{{ uploaded_image }}" alt="Uploaded fundus image">
+            </section>
+
+            <section class="image-card">
+                <div class="image-card-header">
+                    <span>Preprocessed Output</span>
+                    <strong>Local Average Subtraction</strong>
+                </div>
+                <img src="{{ processed_image }}" alt="Preprocessed fundus image">
+            </section>
+        </section>
+
+        <section class="clinical-note">
+            <h3>Interpretation Note</h3>
+            <p>
+                This result is generated by a prototype deep learning model. It should be used only
+                as a preliminary screening reference. External validation and clinical evaluation
+                are required before real-world deployment.
+            </p>
+        </section>
+        {% endif %}
+
+        <footer>
+            <span>DR-Screen AI Prototype</span>
+            <span>EfficientNet-B3 · APTOS 2019 · Flask Web Application</span>
+        </footer>
+
+    </main>
+
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const fileName = document.getElementById("fileName");
+        const uploadForm = document.getElementById("uploadForm");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+
+        imageInput.addEventListener("change", function () {
+            if (this.files && this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+            } else {
+                fileName.textContent = "Supported formats: JPG, JPEG, PNG";
+            }
+        });
+
+        uploadForm.addEventListener("submit", function () {
+            loadingOverlay.style.display = "flex";
+        });
+    </script>
+</body>
+</html>
